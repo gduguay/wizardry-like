@@ -17,10 +17,12 @@ Expedition:augment({
         local f = self.game.floor
         local cam = self.camera
 
-        f:draw_at(0, 0, scale)
+        local half_scale = scale / 2
+
+        f:draw_at(0, 0, half_scale)
 
         love.graphics.setColor(0, 1, 1)
-        love.graphics.circle('fill', p.x * scale + scale / 2, p.y * scale + scale / 2, scale / 4)
+        love.graphics.circle('fill', p.x * half_scale + half_scale / 2, p.y * half_scale + half_scale / 2, half_scale / 4)
 
         love.graphics.setColor(1, 1, 1)
 
@@ -39,7 +41,7 @@ Expedition:augment({
         for x1, y1, x2, y2, i, dg in self.camera:cast_rays(p.vector:angle(), 3.5) do
             if i % 50 == 0 then
                 setColor(1, 0, 0)
-                line(cam.x * scale, cam.y * scale, x2 * scale, y2 * scale)
+                line(cam.x * half_scale, cam.y * half_scale, x2 * half_scale, y2 * half_scale)
             end
         end
 
@@ -87,7 +89,7 @@ Expedition:augment({
                 self.game.blob:bump()
                 return
             end
-            self.game.blob:forward()
+            self.game.blob:forward(self.game.floor)
         elseif key == 'a' or key == 'left' then
             self.game.blob:turn_left()
         elseif key == 'd' or key == 'right' then

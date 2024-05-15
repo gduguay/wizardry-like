@@ -32,7 +32,6 @@ VerticalWall:augment({
 })
 
 local function test_vertical_walls(x1, y1, x2, y2, _, floor)
-
     local dx = x2 - x1
     local dy = y2 - y1
 
@@ -50,6 +49,11 @@ local function test_vertical_walls(x1, y1, x2, y2, _, floor)
 
     local next_y = y1 + (next_x - x1) * dy / dx
 
+    if dy > 0 and next_y > y2 then return nil end
+    if dy < 0 and next_y < y2 then return nil end
+    if dx > 0 and next_x > x2 then return nil end
+    if dx < 0 and next_x < x2 then return nil end
+
     local found, wall = floor:vwall_at(next_x, next_y)
 
     if found then
@@ -57,15 +61,13 @@ local function test_vertical_walls(x1, y1, x2, y2, _, floor)
     end
 
     while true do
-
         if dx > 0 then
             next_x = next_x + 1
             next_y = next_y + dy / dx
-        else 
+        else
             next_x = next_x - 1
             next_y = next_y - dy / dx
         end
-
 
         if dx > 0 and next_x > x2 then return nil end
         if dx < 0 and next_x < x2 then return nil end
@@ -81,7 +83,6 @@ local function test_vertical_walls(x1, y1, x2, y2, _, floor)
 end
 
 local function test_horizontal_walls(x1, y1, x2, y2, _, floor)
-
     local dx = x2 - x1
     local dy = y2 - y1
 
@@ -99,22 +100,27 @@ local function test_horizontal_walls(x1, y1, x2, y2, _, floor)
 
     local next_x = x1 + (next_y - y1) * dx / dy
 
+    if dy > 0 and next_y > y2 then return nil end
+    if dy < 0 and next_y < y2 then return nil end
+    if dx > 0 and next_x > x2 then return nil end
+    if dx < 0 and next_x < x2 then return nil end
+
     local found, wall = floor:hwall_at(next_x, next_y)
 
     if found then
+        print("1) wall at " ..
+            next_x .. ", " .. next_y .. " x2 = " .. x2 .. " y2 = " .. y2 .. " dx = " .. dx .. " dy = " .. dy)
         return next_x, next_y, wall
     end
 
     while true do
-
         if dy > 0 then
             next_y = next_y + 1
             next_x = next_x + dx / dy
-        else 
+        else
             next_y = next_y - 1
             next_x = next_x - dx / dy
         end
-
 
         if dy > 0 and next_y > y2 then return nil end
         if dy < 0 and next_y < y2 then return nil end
@@ -124,6 +130,8 @@ local function test_horizontal_walls(x1, y1, x2, y2, _, floor)
         found, wall = floor:hwall_at(next_x, next_y)
 
         if found then
+            print("2) wall at " ..
+                next_x .. ", " .. next_y .. " x2 = " .. x2 .. " y2 = " .. y2 .. " dx = " .. dx .. " dy = " .. dy)
             return next_x, next_y, wall
         end
     end
@@ -160,6 +168,10 @@ Floor:augment({
         return test_vertical_walls(x1, y1, x2, y2, dg, self)
     end,
 
+    clamp = function(self, x, y)
+        return ((x - 1) % self.width) + 1, ((y - 1) % self.height) + 1
+    end,
+
     draw_at = function(self, x, y, scale)
         for cy = 1, self.height + 1, 1 do
             for _, wall in ipairs(self.hwalls[cy]) do
@@ -186,9 +198,8 @@ Floor:augment({
     end,
 
     hwall_at = function(self, x, y)
-        if y < 1 or y > self.height + 1 then
-            return false
-        end
+        x = ((x - 1) % self.width) + 1
+        y = ((y - 1) % self.height) + 1
         local walls = self.hwalls[y]
         if not walls then
             error("No walls at y = " .. y .. " . " .. self.height)
@@ -202,9 +213,8 @@ Floor:augment({
     end,
 
     vwall_at = function(self, x, y)
-        if x < 1 or x > self.width + 1 then
-            return false
-        end
+        x = ((x - 1) % self.width) + 1
+        y = ((y - 1) % self.height) + 1
         local walls = self.vwalls[x]
         if not walls then
             error("No walls at x = " .. x .. " . " .. self.width)

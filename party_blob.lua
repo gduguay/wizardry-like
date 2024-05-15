@@ -66,23 +66,24 @@ PartyBlob:augment({
         })
     end,
 
-    forward = function(self)
+    forward = function(self, floor)
 
         local v = self:direction_vector()
 
-        self.coords_x = self.coords_x + v.x
-        self.coords_y = self.coords_y + v.y
+        self.coords_x, self.coords_y = floor:clamp(self.coords_x + v.x, self.coords_y + v.y)
 
-        local x, y, vx, vy = self.x, self.y, v.x, v.y
+        local start_x = self.coords_x - v.x
+        local start_y = self.coords_y - v.y
 
         self.move_queue:push({
             duration = self.animation_speed,
             init = function()
-                x, y = self.x, self.y
+                self.x = start_x
+                self.y = start_y
             end,
             callback = function(progress)
-                self.x = x + vx * progress
-                self.y = y + vy * progress
+                self.x = start_x + v.x * progress
+                self.y = start_y + v.y * progress
             end,
             easing = tween.easeIn
         })
